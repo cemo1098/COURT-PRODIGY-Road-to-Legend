@@ -149,6 +149,38 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .match-vs .vs{font-size:.75rem;color:var(--text3);font-weight:700}
 .match-vs .date{font-size:.7rem;color:var(--text2);margin-top:.2rem}
 .match-info{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text2);padding-top:.8rem;border-top:1px solid var(--border)}
+
+/* LIG TABLOSU */
+.league-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1rem}
+.league-table-header{background:var(--bg2);padding:.7rem 1rem;display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px;gap:.3rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;align-items:center}
+.league-table-row{padding:.65rem 1rem;display:grid;grid-template-columns:28px 1fr 36px 36px 36px 36px 52px;gap:.3rem;align-items:center;border-top:1px solid var(--border);transition:background .15s}
+.league-table-row:hover{background:var(--card2)}
+.league-table-row.is-player{background:rgba(249,115,22,.08);border-left:3px solid var(--accent)}
+.lt-rank{font-size:.8rem;font-weight:800;color:var(--text3);text-align:center}
+.lt-rank.top{color:var(--gold)}
+.lt-rank.playoff-zone{color:var(--green)}
+.lt-team{display:flex;align-items:center;gap:.5rem;min-width:0}
+.lt-team-icon{font-size:1rem;flex-shrink:0}
+.lt-team-name{font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lt-team-name.is-player-team{color:var(--accent)}
+.lt-val{font-size:.8rem;font-weight:600;text-align:center;color:var(--text2)}
+.lt-pts{font-size:.85rem;font-weight:800;text-align:center;color:var(--text)}
+.lt-form-dots{display:flex;gap:2px;justify-content:center}
+.lt-dot{width:7px;height:7px;border-radius:50%}
+.lt-dot.w{background:var(--green)}
+.lt-dot.l{background:var(--red)}
+.lt-dot.empty{background:var(--border)}
+.matches-tab-switcher{display:flex;gap:.5rem;margin-bottom:1rem}
+.tab-switch-btn{flex:1;padding:.6rem;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text2);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+.tab-switch-btn.active{background:rgba(249,115,22,.15);border-color:var(--accent);color:var(--accent)}
+.zone-legend{display:flex;gap:.8rem;flex-wrap:wrap;padding:.7rem 1rem;background:var(--bg2);font-size:.65rem;color:var(--text3)}
+.zone-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}
+.season-record-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+.record-big{font-size:1.4rem;font-weight:900}
+.record-big .w{color:var(--green)}
+.record-big .sep{color:var(--text3);margin:0 .2rem}
+.record-big .l{color:var(--red)}
+.record-sub{font-size:.75rem;color:var(--text2)}
 .transfer-card{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:1.2rem;margin-bottom:1rem;position:relative;overflow:hidden}
 .transfer-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--gold));opacity:0;transition:opacity .2s}
 .transfer-card:hover{border-color:var(--accent)}
@@ -482,9 +514,24 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     </div>
 
     <div class="game-tab" id="tab-matches">
-      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem">Maç Takvimi</h2>
-      <p style="color:var(--text2);font-size:.83rem;margin-bottom:1rem" id="matches-sub">Bu sezonun maçları</p>
-      <div id="match-list"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+        <h2 style="font-size:1.2rem;font-weight:800">Maçlar</h2>
+        <span style="font-size:.75rem;color:var(--text2)" id="matches-sub"></span>
+      </div>
+      <div class="matches-tab-switcher">
+        <button class="tab-switch-btn active" id="msw-schedule" onclick="switchMatchesView('schedule')">📅 Takvim</button>
+        <button class="tab-switch-btn" id="msw-table" onclick="switchMatchesView('table')">🏆 Lig Tablosu</button>
+      </div>
+      <div id="match-schedule-view">
+        <div class="season-record-bar">
+          <div class="record-big"><span class="w" id="rec-wins">0</span><span class="sep">-</span><span class="l" id="rec-losses">0</span></div>
+          <div><div class="record-sub" id="rec-label">Bu Sezon</div><div style="font-size:.7rem;color:var(--text3)" id="rec-rank"></div></div>
+        </div>
+        <div id="match-list"></div>
+      </div>
+      <div id="match-table-view" style="display:none">
+        <div id="league-table-container"></div>
+      </div>
     </div>
 
     <div class="game-tab" id="tab-training">
@@ -658,6 +705,11 @@ const TEAMS = {
     {id:'manisa',name:'Manisa Eagles',short:'MAN',league:'Türkiye 2. Ligi',flag:'🦅',strength:51,city:'Manisa'},
     {id:'antalya',name:'Antalya Suns',short:'ANT',league:'Türkiye 2. Ligi',flag:'☀️',strength:50,city:'Antalya'},
     {id:'gaziantep',name:'Gaziantep Flames',short:'GAZ',league:'Türkiye 2. Ligi',flag:'🔥',strength:52,city:'Gaziantep'},
+    {id:'samsun',name:'Samsun Storks',short:'SAM',league:'Türkiye 2. Ligi',flag:'🦢',strength:49,city:'Samsun'},
+    {id:'eskisehir',name:'Eskişehir Stallions',short:'ESK',league:'Türkiye 2. Ligi',flag:'🐎',strength:48,city:'Eskişehir'},
+    {id:'trabzon',name:'Trabzon Giants',short:'TRA',league:'Türkiye 2. Ligi',flag:'⚓',strength:54,city:'Trabzon'},
+    {id:'konya',name:'Konya Mystics',short:'KON',league:'Türkiye 2. Ligi',flag:'🌙',strength:47,city:'Konya'},
+    {id:'kayseri',name:'Kayseri Falcons',short:'KAY',league:'Türkiye 2. Ligi',flag:'🦅',strength:53,city:'Kayseri'},
   ],
   turkey:[
     {id:'fb',name:'Kadıköy Falcons',short:'KAD',league:'Anadolu Premier Lig',flag:'🦅',strength:85,city:'İstanbul'},
@@ -674,33 +726,60 @@ const TEAMS = {
     {id:'barca',name:'Catalonia Blau',short:'CAT',league:'Iberia Liga Basket',flag:'🔵',strength:90,city:'Barselona'},
     {id:'baskonia',name:'Basque Thunder',short:'BAS',league:'Iberia Liga Basket',flag:'⚡',strength:80,city:'Vitoria'},
     {id:'valencia',name:'Valencia Reds',short:'VAL',league:'Iberia Liga Basket',flag:'🔴',strength:78,city:'Valensiya'},
+    {id:'gran',name:'Gran Canaria Waves',short:'GCW',league:'Iberia Liga Basket',flag:'🌊',strength:74,city:'Las Palmas'},
+    {id:'malaga',name:'Málaga Bulls',short:'MAL',league:'Iberia Liga Basket',flag:'🐂',strength:72,city:'Málaga'},
+    {id:'zaragoza',name:'Zaragoza Arrows',short:'ZAR',league:'Iberia Liga Basket',flag:'🏹',strength:75,city:'Zaragoza'},
+    {id:'joventut',name:'Joventut Vipers',short:'JOV',league:'Iberia Liga Basket',flag:'🐍',strength:77,city:'Badalona'},
   ],
   greece:[
     {id:'piraeus',name:'Pire Reds',short:'PIR',league:'Hellenik Elite Lig',flag:'🔴',strength:88,city:'Pire'},
     {id:'athens',name:'Atina Greens',short:'ATH',league:'Hellenik Elite Lig',flag:'🟢',strength:86,city:'Atina'},
     {id:'paok',name:'Selanik Blacks',short:'SEL',league:'Hellenik Elite Lig',flag:'⚫',strength:78,city:'Selanik'},
     {id:'aek',name:'Atina Union',short:'AEK',league:'Hellenik Elite Lig',flag:'🟡',strength:75,city:'Atina'},
+    {id:'promitheas',name:'Patras Thunder',short:'PAT',league:'Hellenik Elite Lig',flag:'⚡',strength:72,city:'Patras'},
+    {id:'lavrio',name:'Lavrio Sharks',short:'LAV',league:'Hellenik Elite Lig',flag:'🦈',strength:69,city:'Lavrio'},
+    {id:'iraklio',name:'Iraklio Titans',short:'IRA',league:'Hellenik Elite Lig',flag:'🏛️',strength:71,city:'Iraklio'},
+    {id:'aris',name:'Selanik Aris',short:'ARI',league:'Hellenik Elite Lig',flag:'🌟',strength:73,city:'Selanik'},
   ],
   balkan:[
     {id:'belgrade',name:'Belgrad Panthers',short:'BEL',league:'Balkan Süper Lig',flag:'🐆',strength:84,city:'Belgrad'},
     {id:'crvena',name:'Belgrad Stars',short:'BLS',league:'Balkan Süper Lig',flag:'⭐',strength:83,city:'Belgrad'},
     {id:'mega',name:'Mega Ballers',short:'MEG',league:'Balkan Süper Lig',flag:'🎯',strength:72,city:'Belgrad'},
     {id:'cedevita',name:'Ljubljana Cedars',short:'LJU',league:'Balkan Süper Lig',flag:'🌲',strength:75,city:'Ljubljana'},
+    {id:'zagreb',name:'Zagreb Eagles',short:'ZAG',league:'Balkan Süper Lig',flag:'🦅',strength:76,city:'Zagreb'},
+    {id:'split',name:'Split Wolves',short:'SPL',league:'Balkan Süper Lig',flag:'🐺',strength:70,city:'Split'},
+    {id:'skopje',name:'Skopje Hawks',short:'SKO',league:'Balkan Süper Lig',flag:'🦅',strength:68,city:'Skopje'},
+    {id:'sofia',name:'Sofia Bears',short:'SOF',league:'Balkan Süper Lig',flag:'🐻',strength:67,city:'Sofya'},
   ],
   italy:[
     {id:'milano',name:'Milano İmparatorlar',short:'MIL',league:'Italia Hoops Lig',flag:'👑',strength:87,city:'Milano'},
     {id:'bologna',name:'Bologna Virtue',short:'BOL',league:'Italia Hoops Lig',flag:'✨',strength:83,city:'Bologna'},
     {id:'venezia',name:'Venedik Rowers',short:'VEN',league:'Italia Hoops Lig',flag:'🚣',strength:76,city:'Venedik'},
+    {id:'brindisi',name:'Brindisi Hawks',short:'BRI',league:'Italia Hoops Lig',flag:'🦅',strength:74,city:'Brindisi'},
+    {id:'sassari',name:'Sassari Storm',short:'SAS',league:'Italia Hoops Lig',flag:'🌪️',strength:78,city:'Sassari'},
+    {id:'trento',name:'Trento Wolves',short:'TRE',league:'Italia Hoops Lig',flag:'🐺',strength:72,city:'Trento'},
+    {id:'reggio',name:'Reggio Lions',short:'REG',league:'Italia Hoops Lig',flag:'🦁',strength:75,city:'Reggio Emilia'},
+    {id:'napoli',name:'Napoli Flames',short:'NAP',league:'Italia Hoops Lig',flag:'🔥',strength:71,city:'Napoli'},
   ],
   germany:[
     {id:'munich',name:'Münih Bavarians',short:'MÜN',league:'Deutsch Basket Lig',flag:'⚪',strength:82,city:'Münih'},
     {id:'berlin',name:'Berlin Wings',short:'BER',league:'Deutsch Basket Lig',flag:'🦅',strength:79,city:'Berlin'},
     {id:'bamberg',name:'Bamberg Roses',short:'BAM',league:'Deutsch Basket Lig',flag:'🌹',strength:74,city:'Bamberg'},
+    {id:'ulm',name:'Ulm Titans',short:'ULM',league:'Deutsch Basket Lig',flag:'⚔️',strength:72,city:'Ulm'},
+    {id:'bonn',name:'Bonn Rockets',short:'BON',league:'Deutsch Basket Lig',flag:'🚀',strength:76,city:'Bonn'},
+    {id:'oldenburg',name:'Oldenburg Wolves',short:'OLD',league:'Deutsch Basket Lig',flag:'🐺',strength:71,city:'Oldenburg'},
+    {id:'hamburg',name:'Hamburg Towers',short:'HAM',league:'Deutsch Basket Lig',flag:'🗼',strength:73,city:'Hamburg'},
+    {id:'frankfurt',name:'Frankfurt Bulls',short:'FRA',league:'Deutsch Basket Lig',flag:'🐂',strength:75,city:'Frankfurt'},
   ],
   france:[
     {id:'lyon',name:'Lyon Wolves',short:'LYO',league:'Gallic Pro Basket',flag:'🐺',strength:78,city:'Lyon'},
     {id:'monaco',name:'Riviera Sharks',short:'MON',league:'Gallic Pro Basket',flag:'🦈',strength:84,city:'Monako'},
     {id:'paris',name:'Paris Ballers',short:'PAR',league:'Gallic Pro Basket',flag:'🗼',strength:77,city:'Paris'},
+    {id:'dijon',name:'Dijon Foxes',short:'DIJ',league:'Gallic Pro Basket',flag:'🦊',strength:73,city:'Dijon'},
+    {id:'strasbourg',name:'Strasbourg Eagles',short:'STR',league:'Gallic Pro Basket',flag:'🦅',strength:75,city:'Strazburg'},
+    {id:'bordeaux',name:'Bordeaux Blades',short:'BOR',league:'Gallic Pro Basket',flag:'🗡️',strength:71,city:'Bordeaux'},
+    {id:'nanterre',name:'Nanterre Giants',short:'NAN',league:'Gallic Pro Basket',flag:'🏛️',strength:72,city:'Nanterre'},
+    {id:'cholet',name:'Cholet Knights',short:'CHO',league:'Gallic Pro Basket',flag:'⚔️',strength:70,city:'Cholet'},
   ],
   eurostars:[
     {id:'es-fb',name:'Kadıköy Falcons',short:'KAD',league:'Euro Stars League',flag:'🦅',strength:88,city:'İstanbul'},
@@ -1104,6 +1183,7 @@ function generateMatchSchedule(){
     });
   }
   G.playoffDone=false;
+  initLeagueTable(); // Lig tablosunu sıfırla
 }
 
 function getLigTeams(){
@@ -1122,11 +1202,252 @@ function getLigTeams(){
   return TEAMS.turkey;
 }
 
+// ==================== LIG TABLOSU ====================
+
+function initLeagueTable(){
+  // Lig tablosunu başlat: her takım için kayıt oluştur
+  const allTeams = getLigTeams();
+  G.leagueTable = {};
+  allTeams.forEach(t => {
+    G.leagueTable[t.id] = {
+      team: t,
+      played: 0,
+      wins: 0,
+      losses: 0,
+      pointsFor: 0,    // Atılan toplam sayı
+      pointsAgainst: 0, // Yenilen toplam sayı
+      streak: [],       // Son 5 maç: 'w' veya 'l'
+      points: 0         // Puan (galibiyet=2, mağlubiyet=1)
+    };
+  });
+  // Oyuncunun takımını da ekle (zaten listede olmalı, kontrol için)
+  if(G.team && !G.leagueTable[G.team.id]){
+    G.leagueTable[G.team.id] = {
+      team: G.team, played:0, wins:0, losses:0,
+      pointsFor:0, pointsAgainst:0, streak:[], points:0
+    };
+  }
+}
+
+function updateLeagueTable(myTeamWon, myScore, oppScore, oppTeamId){
+  if(!G.leagueTable) initLeagueTable();
+  
+  const myId = G.team.id;
+  const myEntry = G.leagueTable[myId];
+  const oppEntry = G.leagueTable[oppTeamId];
+
+  // Oyuncunun takımını güncelle
+  if(myEntry){
+    myEntry.played++;
+    myEntry.pointsFor += myScore;
+    myEntry.pointsAgainst += oppScore;
+    if(myTeamWon){
+      myEntry.wins++;
+      myEntry.points += 2;
+      myEntry.streak.push('w');
+    } else {
+      myEntry.losses++;
+      myEntry.points += 1;
+      myEntry.streak.push('l');
+    }
+    if(myEntry.streak.length > 5) myEntry.streak.shift(); // Sadece son 5'i tut
+  }
+
+  // Rakip takımı güncelle
+  if(oppEntry){
+    oppEntry.played++;
+    oppEntry.pointsFor += oppScore;
+    oppEntry.pointsAgainst += myScore;
+    if(!myTeamWon){
+      oppEntry.wins++;
+      oppEntry.points += 2;
+      oppEntry.streak.push('w');
+    } else {
+      oppEntry.losses++;
+      oppEntry.points += 1;
+      oppEntry.streak.push('l');
+    }
+    if(oppEntry.streak.length > 5) oppEntry.streak.shift();
+  }
+
+  // Diğer takımların kendi aralarındaki maçları simüle et
+  simulateOtherTeamMatches(myId, oppTeamId);
+}
+
+function simulateOtherTeamMatches(skipId1, skipId2){
+  // Her maçta diğer takımlar da oynuyor gibi davran
+  // Yaklaşık %30 şansla iki rastgele takımın sonucunu güncelle
+  if(!G.leagueTable) return;
+  const ids = Object.keys(G.leagueTable).filter(id => id !== skipId1 && id !== skipId2);
+  if(ids.length < 2) return;
+  
+  // Rastgele 1-2 maç simüle et
+  const numMatches = rand(1, 2);
+  for(let m = 0; m < numMatches; m++){
+    const shuffled = ids.sort(() => Math.random() - .5);
+    const t1id = shuffled[0];
+    const t2id = shuffled[1];
+    if(!t1id || !t2id) continue;
+    
+    const t1 = G.leagueTable[t1id];
+    const t2 = G.leagueTable[t2id];
+    const diff = t1.team.strength - t2.team.strength;
+    const t1wins = Math.random() < (0.5 + diff * 0.008);
+    const s1 = rand(72, 105);
+    const s2 = rand(72, 105);
+    
+    t1.played++; t1.pointsFor += s1; t1.pointsAgainst += s2;
+    t2.played++; t2.pointsFor += s2; t2.pointsAgainst += s1;
+    
+    if(t1wins){
+      t1.wins++; t1.points += 2; t1.streak.push('w');
+      t2.losses++; t2.points += 1; t2.streak.push('l');
+    } else {
+      t2.wins++; t2.points += 2; t2.streak.push('w');
+      t1.losses++; t1.points += 1; t1.streak.push('l');
+    }
+    if(t1.streak.length > 5) t1.streak.shift();
+    if(t2.streak.length > 5) t2.streak.shift();
+  }
+}
+
+function getSortedTable(){
+  if(!G.leagueTable) return [];
+  return Object.values(G.leagueTable).sort((a, b) => {
+    // 1. Puana göre sırala (yüksek önce)
+    if(b.points !== a.points) return b.points - a.points;
+    // 2. Puan farkına göre (averaj)
+    const diffB = b.pointsFor - b.pointsAgainst;
+    const diffA = a.pointsFor - a.pointsAgainst;
+    return diffB - diffA;
+  });
+}
+
+function getPlayerRank(){
+  if(!G.leagueTable || !G.team) return null;
+  const sorted = getSortedTable();
+  const idx = sorted.findIndex(e => e.team.id === G.team.id);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function renderLeagueTable(){
+  const container = document.getElementById('league-table-container');
+  if(!container) return;
+  
+  if(!G.team){
+    container.innerHTML = '<p style="color:var(--text2);text-align:center;padding:2rem">Önce bir takıma katıl.</p>';
+    return;
+  }
+  if(!G.leagueTable){
+    container.innerHTML = '<p style="color:var(--text2);text-align:center;padding:2rem">Sezon başlamadı. Bir takıma transfer ol.</p>';
+    return;
+  }
+  
+  const sorted = getSortedTable();
+  const totalTeams = sorted.length;
+  // İlk 4 takım playoff (veya ligin yarısı küçükse)
+  const playoffSpots = Math.min(4, Math.floor(totalTeams / 2));
+  
+  let html = `
+    <div class="league-table-wrap">
+      <div style="padding:.8rem 1rem;border-bottom:1px solid var(--border)">
+        <div style="font-size:.9rem;font-weight:800">${G.team.league}</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">Sezon ${G.season} · ${sorted[0]?.played || 0} maç oynandı</div>
+      </div>
+      <div class="league-table-header">
+        <span>#</span>
+        <span>Takım</span>
+        <span style="text-align:center">O</span>
+        <span style="text-align:center">G</span>
+        <span style="text-align:center">M</span>
+        <span style="text-align:center">Av</span>
+        <span style="text-align:center">Puan</span>
+      </div>`;
+  
+  sorted.forEach((entry, idx) => {
+    const rank = idx + 1;
+    const isPlayer = entry.team.id === G.team.id;
+    const avg = entry.played > 0 ? entry.pointsFor - entry.pointsAgainst : 0;
+    const avgStr = avg >= 0 ? '+' + avg : '' + avg;
+    
+    // Sıra rengi
+    let rankClass = 'lt-rank';
+    if(rank === 1) rankClass += ' top';
+    else if(rank <= playoffSpots) rankClass += ' playoff-zone';
+    
+    // Son 5 maç noktaları
+    const dots = Array(5).fill(null).map((_, i) => {
+      const result = entry.streak[i];
+      if(!result) return '<span class="lt-dot empty"></span>';
+      return '<span class="lt-dot ' + result + '"></span>';
+    }).join('');
+    
+    // Playoff bölgesi çizgisi
+    const borderTop = rank === playoffSpots + 1 ? 'border-top:2px dashed rgba(239,68,68,.3)' : '';
+    
+    html += `
+      <div class="league-table-row ${isPlayer ? 'is-player' : ''}" style="${borderTop}">
+        <span class="${rankClass}">${rank}</span>
+        <div class="lt-team">
+          <span class="lt-team-icon">${entry.team.flag}</span>
+          <span class="lt-team-name ${isPlayer ? 'is-player-team' : ''}">${entry.team.short || entry.team.name.split(' ')[0]}</span>
+        </div>
+        <span class="lt-val">${entry.played}</span>
+        <span class="lt-val" style="color:var(--green)">${entry.wins}</span>
+        <span class="lt-val" style="color:var(--red)">${entry.losses}</span>
+        <span class="lt-val" style="color:${avg>=0?'var(--green)':'var(--red)'}">${avgStr}</span>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+          <span class="lt-pts">${entry.points}</span>
+        </div>
+      </div>`;
+  });
+  
+  html += `
+      <div class="zone-legend">
+        <span><span class="zone-dot" style="background:var(--gold);display:inline-block"></span> 1. → Şampiyon</span>
+        <span><span class="zone-dot" style="background:var(--green);display:inline-block"></span> 2-${playoffSpots}. → Playoff</span>
+        <span><span class="zone-dot" style="background:var(--red);display:inline-block"></span> Alt ${Math.floor(totalTeams*.25)}. → Risk</span>
+      </div>
+    </div>`;
+  
+  container.innerHTML = html;
+}
+
+function switchMatchesView(view){
+  const schedBtn = document.getElementById('msw-schedule');
+  const tableBtn = document.getElementById('msw-table');
+  const schedView = document.getElementById('match-schedule-view');
+  const tableView = document.getElementById('match-table-view');
+  
+  if(view === 'schedule'){
+    schedBtn.classList.add('active');
+    tableBtn.classList.remove('active');
+    schedView.style.display = 'block';
+    tableView.style.display = 'none';
+  } else {
+    tableBtn.classList.add('active');
+    schedBtn.classList.remove('active');
+    schedView.style.display = 'none';
+    tableView.style.display = 'block';
+    renderLeagueTable(); // Tabloyu çiz
+  }
+}
+
 // ==================== MAÇLAR ====================
 
 function renderMatches(){
   if(!G.team){document.getElementById('match-list').innerHTML='<p style="color:var(--text2);text-align:center;padding:2rem">Önce bir takıma katıl.</p>';return;}
-  document.getElementById('matches-sub').textContent=G.team.name+' · Sezon '+G.season+' · '+G.wins+'G-'+G.losses+'M';
+  document.getElementById('matches-sub').textContent=G.team.flag+' '+G.team.short;
+  // Rekor güncelle
+  const recWins=document.getElementById('rec-wins');
+  const recLosses=document.getElementById('rec-losses');
+  const recLabel=document.getElementById('rec-label');
+  const recRank=document.getElementById('rec-rank');
+  if(recWins) recWins.textContent=G.wins;
+  if(recLosses) recLosses.textContent=G.losses;
+  if(recLabel) recLabel.textContent='Sezon '+G.season+' Rekoru';
+  const rank=getPlayerRank();
+  if(recRank) recRank.textContent=rank?'Lig Sıralaması: '+rank+'. sıra':'';
   document.getElementById('match-list').innerHTML=G.matchSchedule.map((m,i)=>{
     const isPast=m.played;
     const isCurrent=!m.played&&m.week<=G.week+2;
@@ -1254,6 +1575,7 @@ function finishMatch(idx,stats){
   const m=G.matchSchedule[idx];
   m.played=true;m.result=stats.win?'win':'loss';m.playerStats=stats;
   if(stats.win)G.wins++;else G.losses++;
+  updateLeagueTable(stats.win, stats.teamScore, stats.oppScore, m.opponent.id);
   G.seasonStats.pts+=stats.pts;G.seasonStats.ast+=stats.ast;G.seasonStats.reb+=stats.reb;
   G.seasonStats.stl+=stats.stl;G.seasonStats.blk+=stats.blk;G.seasonStats.to+=stats.to;G.seasonStats.games++;
   G.energy=clamp(G.energy-rand(8,15),20,100);
@@ -1730,6 +2052,7 @@ function openSeasonEnd(){
 
 function nextSeason(openTransfer){
   G.season++;G.week=1;G.wins=0;G.losses=0;G.trained=false;G.playoffDone=false;
+  G.leagueTable=null; // Yeni sezonda tabloyu sıfırla
   G.seasonStats={pts:0,ast:0,reb:0,stl:0,blk:0,to:0,games:0};
   G.energy=100;G.form=75;G.injuryRisk=10;G.phase='transfer';G.news=[];
   closeModal('modal-season-end');
